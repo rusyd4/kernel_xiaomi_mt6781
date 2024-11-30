@@ -116,25 +116,6 @@ struct pwm_spec_config aw8622_pwm_old_mode_config = {
 
 /* Customer's f0 standard is 208hz, with a deviation of +-7hz min f0 = 201 max f0 = 215 */
 static char aw8622_waveform_file_name[][AW8622_WAVEFORM_NAME_MAX] = {
-#if 0
-/* Actual waveform file used */
-	{"LONG_cfg.bin"},
-	/* Called when the chip has been enabled */
-	{"Q_cfg.bin"},
-	{"M_cfg.bin"},
-	{"Z_cfg.bin"},
-	
-	/* Called when the chip is disable */
-	{"need_setup_Q_cfg.bin"},
-	{"need_setup_M_cfg.bin"},
-	{"need_setup_Z_cfg.bin"},
-
-/* f0 calibrate wave file */
-	{"low_f0_cali_cfg.bin"}, /* 204 hz */
-	{"mid_f0_cali_cfg.bin"}, /* 208 hz */
-	{"high_f0_cali_cfg.bin"}, /* 212 hz */
-#endif
-#if 1
 /* 204 hz */
 /* low f0  waveform file used */
 	{"aw8622_low_f0_LONG_cfg.bin"},
@@ -179,7 +160,6 @@ static char aw8622_waveform_file_name[][AW8622_WAVEFORM_NAME_MAX] = {
 	{"aw8622_low_f0_cali_cfg.bin"}, /* 204 hz */
 	{"aw8622_mid_f0_cali_cfg.bin"}, /* 208 hz */
 	{"aw8622_high_f0_cali_cfg.bin"}, /* 212 hz */
-#endif
 };
 
 /* wave file data parse and save */
@@ -340,17 +320,6 @@ static void aw8622_waveform_data_delay_work(struct work_struct *delay_work) {
 					haptic->wave_phy);
 		haptic->is_wavefrom_ready = false;
 	}
-	#if 0
-	if (haptic->load_idx_offset == (LOW_F0_LOAD_WAVEFORM_OFFSET * NUMS_WAVEFORM_USED)) {
-		haptic->center_freq = LOW_F0_FREQ;
-	} else if (haptic->load_idx_offset == (MID_F0_LOAD_WAVEFORM_OFFSET * NUMS_WAVEFORM_USED)) {
-		haptic->center_freq = MID_F0_FREQ;
-	} else if (haptic->load_idx_offset == (HIGH_F0_LOAD_WAVEFORM_OFFSET * NUMS_WAVEFORM_USED)) {
-		haptic->center_freq = HIGH_F0_FREQ;
-	} else {
-		haptic->center_freq = MID_F0_FREQ;
-	}
-	#endif
 	haptic->wave_max_len = wave_max_len + 4;
 	pr_info("%s wavefile max len = %u\n", __func__, haptic->wave_max_len);
 	//buf_size = (wave_max_len + 4) / 4 ;
@@ -459,13 +428,6 @@ static int aw8622_set_pwm_defalut_state(struct aw8622_haptic *haptic)
 static void aw8622_haptic_stop(struct aw8622_haptic *haptic)
 {
 	aw8622_set_pwm_defalut_state(haptic);
-	#if 0
-	if (!haptic->wave_vir) {
-		dma_free_coherent(haptic->dev, haptic->dma_len, haptic->wave_vir,
-						haptic->wave_phy);
-		haptic->wave_vir = NULL;
-	}
-	#endif
 	haptic->is_actived = false;
 }
 
@@ -530,7 +492,8 @@ static int aw8622_play_wave(struct aw8622_haptic *haptic)
 		dev_err(haptic->dev, "%s pwm_set_spec_config failed ret = %d\n", __func__, ret);
 	}
 	if (!haptic->is_power_on) {
-		gpio_set_value(haptic->hwen_gpio, 1); //hw enable
+		gpio_set_value(haptic->hwen_gpio, 1); //hw enable
+
 		haptic->is_power_on = true;
 	}
 	pr_info("%s effect idx = %d, play_time secs = %d, ms= %lu wave nums = %d\n", __func__,
@@ -1182,13 +1145,11 @@ static int __maybe_unused aw8622_haptic_resume(struct device *dev)
 static SIMPLE_DEV_PM_OPS(aw8622_haptic_pm_ops,
 			 aw8622_haptic_suspend, aw8622_haptic_resume);
 
-#ifdef CONFIG_OF
 static const struct of_device_id pwm_vibra_dt_match_table[] = {
 	{ .compatible = "awinic,aw8622" },
 	{},
 };
 MODULE_DEVICE_TABLE(of, pwm_vibra_dt_match_table);
-#endif
 
 static struct platform_driver aw8622_haptic_driver = {
 	.probe	= aw8622_haptic_probe,
