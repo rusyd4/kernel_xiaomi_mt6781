@@ -1104,7 +1104,7 @@ static int aw8622_haptic_probe(struct platform_device *pdev)
 		return err;
 	}
 
-	haptic->load_idx_offset = MID_F0_LOAD_WAVEFORM_OFFSET * NUMS_WAVEFORM_USED;
+	haptic->load_idx_offset = 9;
 	schedule_delayed_work(&haptic->load_waveform_work, 10 * HZ); //delay 10s
 
 	pr_info("%s probe success \r\n", __func__);
